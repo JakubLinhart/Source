@@ -77,7 +77,7 @@ void CVarDefContNum::SetValNum( INT64 iVal )
 inline LPCTSTR CVarDefContNum::GetValStr() const
 {
 	TemporaryString pszTmp;
-	sprintf(pszTmp, "0%llx", m_iVal);
+	sprintf(pszTmp, "%lld", m_iVal);
 	return pszTmp;
 }
 
