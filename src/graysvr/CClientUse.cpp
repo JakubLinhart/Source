@@ -1004,7 +1004,7 @@ bool CClient::Cmd_Skill_Tracking(WORD wTrackType, bool bExec)
 
 	if ( wTrackType > 0 ) // Not Cancelled
 	{
-		ASSERT(track_sel < COUNTOF(m_tmMenu.m_Item));
+		ASSERT(wTrackType < COUNTOF(m_tmMenu.m_Item));
 		if ( bExec )
 		{
 			// Tracking menu got us here. Start tracking the selected creature.
