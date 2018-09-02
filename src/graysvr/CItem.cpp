@@ -2239,8 +2239,9 @@ bool CItem::r_WriteVal( LPCTSTR pszKey, CGString & sVal, CTextConsole * pSrc )
 			sVal.FormatVal( IsTypeArmorWeapon() ? m_itArmor.m_Hits_Cur : 0 );
 			break;
 		case IC_ID:
-			fDoDefault = true;
-			break;
+			return(CObjBase::r_WriteVal("DEFNAME", sVal, pSrc));;
+		case IC_DEFNAME:
+			return(CObjBase::r_WriteVal("ID", sVal, pSrc));;
 		case IC_LAYER:
 			if ( IsItemEquipped())
 			{
