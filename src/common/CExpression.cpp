@@ -826,6 +826,13 @@ INT64 CExpression::GetSingle(LPCTSTR &pszArgs)
 	}
 #pragma endregion intrinsics
 
+	if (pszArgs[0] == '#')
+	{
+		pszArgs++;
+		long long lVal = g_Exp.GetVal(pszArgs);
+		return lVal;
+	}
+
 	// hard end ! Error of some sort.
 	TCHAR szTag[EXPRESSION_MAX_KEY_LEN];
 	size_t i = GetIdentifierString(szTag, pszArgs);
