@@ -283,7 +283,7 @@ bool CScriptTriggerArgs::r_WriteVal( LPCTSTR pszKey, CGString &sVal, CTextConsol
 	{
 		EXC_SET("local");
 		pszKey	+= 6;
-		sVal	= m_VarsLocal.GetKeyStr(pszKey, true);
+		sVal	= m_VarsLocal.GetKeyStr(pszKey);
 		return( true );
 	}
 
@@ -484,47 +484,62 @@ bool CScriptObj::r_GetRef( LPCTSTR & pszKey, CScriptObj * & pRef )
 		if (!g_Exp.m_VarGlobals.GetParseVal(pszTmp, &lVal) && !g_Exp.m_VarDefs.GetParseVal(pszTmp, &lVal))
 			return false;
 
-		CScriptObj* itemDefRef = CItemBase::FindItemBase(static_cast<ITEMID_TYPE>(g_Cfg.ResourceGetIndexType(RES_ITEMDEF, pszTmp2)));
-		if (itemDefRef)
+		CGrayUID uid = static_cast<CGrayUID>(lVal);
+		CObjBase* pFoundObjRef = uid.ObjFind();
+		if (pFoundObjRef)
 		{
-			pszKey = pszTmp2;
+			pszKey = pszTmp;
 			TCHAR * pszSep = const_cast<TCHAR*>(strchr(pszKey, '.'));
 			if (pszSep)
 			{
 				pszKey = pszSep + 1;
 			}
 
-			pRef = itemDefRef;
-			return true;
-		}
-		CScriptObj* charDefRef = CCharBase::FindCharBase(static_cast<CREID_TYPE>(g_Cfg.ResourceGetIndexType(RES_CHARDEF, pszTmp2)));
-		if (charDefRef)
-		{
-			pszKey = pszTmp2;
-			TCHAR * pszSep = const_cast<TCHAR*>(strchr(pszKey, '.'));
-			if (pszSep)
-			{
-				pszKey = pszSep + 1;
-			}
-			pRef = charDefRef;
+			pRef = pFoundObjRef;
 			return true;
 		}
 
-		RESOURCE_ID rid;
-		rid.SetPrivateUID(g_Exp.GetVal(pszTmp2));
+		//CScriptObj* itemDefRef = CItemBase::FindItemBase(static_cast<ITEMID_TYPE>(g_Cfg.ResourceGetIndexType(RES_ITEMDEF, pszTmp2)));
+		//if (itemDefRef)
+		//{
+		//	pszKey = pszTmp2;
+		//	TCHAR * pszSep = const_cast<TCHAR*>(strchr(pszKey, '.'));
+		//	if (pszSep)
+		//	{
+		//		pszKey = pszSep + 1;
+		//	}
 
-		// check the found resource type matches what we searched for
-		if (rid.GetResType() == RES_REGIONRESOURCE || rid.GetResType() == RES_REGIONTYPE)
-		{
-			pszKey = pszTmp2;
-			TCHAR * pszSep = const_cast<TCHAR*>(strchr(pszKey, '.'));
-			if (pszSep)
-			{
-				pszKey = pszSep + 1;
-			}
-			pRef = g_Cfg.ResourceGetDef(rid);
-			return true;
-		}
+		//	pRef = itemDefRef;
+		//	return true;
+		//}
+		//CScriptObj* charDefRef = CCharBase::FindCharBase(static_cast<CREID_TYPE>(g_Cfg.ResourceGetIndexType(RES_CHARDEF, pszTmp2)));
+		//if (charDefRef)
+		//{
+		//	pszKey = pszTmp2;
+		//	TCHAR * pszSep = const_cast<TCHAR*>(strchr(pszKey, '.'));
+		//	if (pszSep)
+		//	{
+		//		pszKey = pszSep + 1;
+		//	}
+		//	pRef = charDefRef;
+		//	return true;
+		//}
+
+		//RESOURCE_ID rid;
+		//rid.SetPrivateUID(g_Exp.GetVal(pszTmp2));
+
+		//// check the found resource type matches what we searched for
+		//if (rid.GetResType() == RES_REGIONRESOURCE || rid.GetResType() == RES_REGIONTYPE)
+		//{
+		//	pszKey = pszTmp2;
+		//	TCHAR * pszSep = const_cast<TCHAR*>(strchr(pszKey, '.'));
+		//	if (pszSep)
+		//	{
+		//		pszKey = pszSep + 1;
+		//	}
+		//	pRef = g_Cfg.ResourceGetDef(rid);
+		//	return true;
+		//}
 	}
 
 
@@ -808,7 +823,7 @@ bool CScriptObj::r_WriteVal( LPCTSTR pszKey, CGString &sVal, CTextConsole * pSrc
 	{
 		if ( pRef == NULL )	// good command but bad link.
 		{
-			sVal = "0";
+			sVal = "";
 			return true;
 		}
 		if ( pszKey[0] == '\0' )	// we where just testing the ref.
@@ -870,6 +885,17 @@ bool CScriptObj::r_WriteVal( LPCTSTR pszKey, CGString &sVal, CTextConsole * pSrc
 				sVal.FormatLLVal(Calc_GetRandLLVal2(min, max));
 
 			return true;
+		}
+		else
+		{
+			{
+				CVarDefCont * pVar = g_Exp.m_VarGlobals.GetKey(pszKey);
+				if (pVar)
+				{
+					sVal = pVar->GetValStr();
+					return true;
+				}
+			}
 		}
 badcmd:
 		return false;	// Bad command.
