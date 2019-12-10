@@ -362,6 +362,8 @@ public:
 	void SetSel( int nStartChar, int nEndChar, BOOL bNoScroll = FALSE )
 	{
 		UNREFERENCED_PARAMETER(bNoScroll);
+		if (m_hWnd == NULL)
+			return;
 		ASSERT(IsWindow());
 		CHARRANGE range;
 		range.cpMin = nStartChar;
@@ -370,6 +372,13 @@ public:
 	}
 	void GetSel(int& nStartChar, int& nEndChar) const
 	{
+		if (m_hWnd == NULL)
+		{
+			nStartChar = 0;
+			nEndChar = 0;
+			return;
+		}
+
 		ASSERT(IsWindow());
 		CHARRANGE range;
 		SendMessage( EM_EXGETSEL, 0, (LPARAM) &range );

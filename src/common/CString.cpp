@@ -483,6 +483,24 @@ size_t Str_TrimEndWhitespace(TCHAR * pStr, size_t len)
 	return(len);
 }
 
+TCHAR * Str_TrimEnd(TCHAR* pStr, LPCTSTR pszSep)
+{
+	size_t len = strlen(pStr);
+
+	while (len > 0)
+	{
+		len--;
+		if (pStr[len] < 0 || !strchr(pszSep, pStr[len]))
+		{
+			++len;
+			break;
+		}
+	}
+	pStr[len] = '\0';
+
+	return (pStr);
+}
+
 TCHAR * Str_TrimWhitespace(TCHAR * pStr)
 {
 	// TODO: WARNING! Possible Memory Lake here!
@@ -498,7 +516,7 @@ bool Str_Parse(TCHAR * pLine, TCHAR ** ppLine2, LPCTSTR pszSep)
 	// RETURN: true = the second arg is valid.
 
 	if (pszSep == NULL)	// default sep.
-		pszSep = "=, \t";
+		pszSep = "=, \t(";
 
 	// skip leading white space.
 	TCHAR * pNonWhite = pLine;
@@ -510,6 +528,7 @@ bool Str_Parse(TCHAR * pLine, TCHAR ** ppLine2, LPCTSTR pszSep)
 
 	TCHAR ch;
 	bool bQuotes = false;
+	bool bBracket = false;
 	for (; ; pLine++)
 	{
 		ch = *pLine;
@@ -527,7 +546,11 @@ bool Str_Parse(TCHAR * pLine, TCHAR ** ppLine2, LPCTSTR pszSep)
 			return false;
 		}
 		if (strchr(pszSep, ch) && (bQuotes == false))
+		{
+			if (ch == '(')
+				bBracket = true;
 			break;
+		}
 	}
 
 	*pLine++ = '\0';
@@ -544,7 +567,10 @@ bool Str_Parse(TCHAR * pLine, TCHAR ** ppLine2, LPCTSTR pszSep)
 	// skip leading white space on args as well.
 	if (ppLine2 != NULL)
 	{
-		*ppLine2 = Str_TrimWhitespace(pLine);
+		if (bBracket)
+			*ppLine2 = Str_TrimEnd(pLine, ") \t");
+		else
+			*ppLine2 = Str_TrimWhitespace(pLine);
 	}
 	return true;
 }

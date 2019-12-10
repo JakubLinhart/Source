@@ -203,6 +203,7 @@ public:
 	}
 
 private:
+	size_t getArgumentsCount();
 	CScriptTriggerArgs(const CScriptTriggerArgs &copy);
 	CScriptTriggerArgs &operator=(const CScriptTriggerArgs &other);
 };

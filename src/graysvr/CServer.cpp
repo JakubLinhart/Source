@@ -1115,6 +1115,7 @@ enum SV_TYPE
 	SV_CLEARLISTS,
 	SV_CONSOLE,
 	SV_EXPORT,
+	SV_ERROR,
 	SV_GARBAGE,
 	SV_GMPAGES,		//read only
 	SV_HEARALL,
@@ -1151,6 +1152,7 @@ LPCTSTR const CServer::sm_szVerbKeys[SV_QTY + 1] =
 	"CLEARLISTS",
 	"CONSOLE",
 	"EXPORT",
+	"ERROR",
 	"GARBAGE",
 	"GMPAGES",		// read only
 	"HEARALL",
@@ -1253,6 +1255,7 @@ bool CServer::r_Verb(CScript &s, CTextConsole *pSrc)
 		}
 	}
 
+	DWORD dwMask = LOGL_EVENT;
 	switch ( static_cast<SV_TYPE>(index) )
 	{
 		case SV_ACCOUNTS:
@@ -1364,14 +1367,17 @@ bool CServer::r_Verb(CScript &s, CTextConsole *pSrc)
 		{
 			return (g_Cfg.LoadResourcesAdd(s.GetArgStr()) != NULL);
 		}
+		case SV_ERROR:
+			dwMask = LOGL_ERROR;
+			goto logMessage;
 		case SV_LOG:
 		{
-			DWORD dwMask = LOGL_EVENT;
+logMessage:
 			LPCTSTR pszArgs = s.GetArgStr();
-			if ( pszArgs && (*pszArgs == '@') )
+			if (pszArgs && (*pszArgs == '@'))
 			{
 				++pszArgs;
-				if ( *pszArgs != '@' )
+				if (*pszArgs != '@')
 					dwMask |= LOGM_NOCONTEXT;
 			}
 			g_Log.Event(dwMask, "%s\n", pszArgs);

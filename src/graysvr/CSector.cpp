@@ -1026,8 +1026,8 @@ void CSector::OnTick(int iPulseCount)
 	}
 	EXC_CATCH;
 
-	EXC_DEBUG_START;
-	CPointMap pt = GetBasePoint();
-	g_Log.EventError("sector #%d [%hd,%hd,%hhd,%hhu]\n", GetIndex(), pt.m_x, pt.m_y, pt.m_z, pt.m_map);
-	EXC_DEBUG_END;
+	//EXC_DEBUG_START;
+	//CPointMap pt = GetBasePoint();
+	//g_Log.EventError("sector #%d [%hd,%hd,%hhd,%hhu]\n", GetIndex(), pt.m_x, pt.m_y, pt.m_z, pt.m_map);
+	//EXC_DEBUG_END;
 }

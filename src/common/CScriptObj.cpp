@@ -2368,6 +2368,64 @@ bool CScriptTriggerArgs::r_LoadVal(CScript &s)
 	return false;
 }
 
+size_t CScriptTriggerArgs::getArgumentsCount()
+{
+	size_t iQty = m_v.GetCount();
+	if (iQty > 0)
+		return iQty;
+
+	// Parse it here
+	TCHAR* pszArgs = const_cast<TCHAR*>(m_s1_raw.GetPtr());
+	TCHAR* s = pszArgs;
+	bool fQuotes = false;
+	bool fInerQuotes = false;
+	while (*s)
+	{
+		if (IsSpace(*s))	// ignore leading spaces
+		{
+			++s;
+			continue;
+		}
+		if ((*s == ',') && !fQuotes)	// add empty arguments if they are provided
+		{
+			m_v.Add(NULL);
+			++s;
+			continue;
+		}
+		if (*s == '"')	// check to see if the argument is quoted (in case it contains commas)
+		{
+			++s;
+			fQuotes = true;
+			fInerQuotes = false;
+		}
+
+		pszArgs = s;	// arg starts here
+		++s;
+
+		while (*s)
+		{
+			if ((*s == '"') && fQuotes)
+			{
+				*s = '\0';
+				fQuotes = false;
+			}
+			else if ((*s == '"'))
+				fInerQuotes = !fInerQuotes;
+
+			if (!fQuotes && !fInerQuotes && (*s == ','))
+			{
+				*s = '\0';
+				++s;
+				break;
+			}
+			++s;
+		}
+		m_v.Add(pszArgs);
+	}
+	iQty = m_v.GetCount();
+
+}
+
 bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 {
 	ADDTOCALLSTACK("CScriptTriggerArgs::r_WriteVal");
@@ -2397,65 +2455,22 @@ bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole
 		sVal = m_VarsFloat.Get(pszKey);
 		return true;
 	}
+	else if (!strnicmp(pszKey, "ARGVCOUNT", 9))
+	{
+		EXC_SET("argvcount");
+		pszKey += 9;
+		SKIP_SEPARATORS(pszKey);
+		size_t iQty = getArgumentsCount();
+		sVal.FormatLLVal(iQty);
+		return true;
+	}
 	else if ( !strnicmp(pszKey, "ARGV", 4) )
 	{
 		EXC_SET("argv");
 		pszKey += 4;
 		SKIP_SEPARATORS(pszKey);
 
-		size_t iQty = m_v.GetCount();
-		if ( iQty < 1 )
-		{
-			// Parse it here
-			TCHAR *pszArgs = const_cast<TCHAR *>(m_s1_raw.GetPtr());
-			TCHAR *s = pszArgs;
-			bool fQuotes = false;
-			bool fInerQuotes = false;
-			while ( *s )
-			{
-				if ( IsSpace(*s) )	// ignore leading spaces
-				{
-					++s;
-					continue;
-				}
-				if ( (*s == ',') && !fQuotes )	// add empty arguments if they are provided
-				{
-					m_v.Add(NULL);
-					++s;
-					continue;
-				}
-				if ( *s == '"' )	// check to see if the argument is quoted (in case it contains commas)
-				{
-					++s;
-					fQuotes = true;
-					fInerQuotes = false;
-				}
-
-				pszArgs = s;	// arg starts here
-				++s;
-
-				while ( *s )
-				{
-					if ( (*s == '"') && fQuotes )
-					{
-						*s = '\0';
-						fQuotes = false;
-					}
-					else if ( (*s == '"') )
-						fInerQuotes = !fInerQuotes;
-
-					if ( !fQuotes && !fInerQuotes && (*s == ',') )
-					{
-						*s = '\0';
-						++s;
-						break;
-					}
-					++s;
-				}
-				m_v.Add(pszArgs);
-			}
-			iQty = m_v.GetCount();
-		}
+		size_t iQty = getArgumentsCount();
 
 		if ( *pszKey == '\0' )
 		{
