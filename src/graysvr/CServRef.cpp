@@ -311,11 +311,10 @@ bool CServerDef::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 			break;
 		default:
 		{
-			LPCTSTR pszArgs = strchr(pszKey, ' ');
+			LPCTSTR pszArgs = strpbrk(pszKey, " (");
 			if (!pszArgs)
 			{
-				pszArgs = strchr(pszKey, '(');
-				if (pszArgs)
+				if (*pszKey == '(')
 				{
 					LPCTSTR pszArgsEnd = strchr(pszArgs, ')');
 					if (pszArgsEnd)

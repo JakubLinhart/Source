@@ -1373,6 +1373,7 @@ bool CScriptObj::r_LoadVal(CScript &s)
 				TCHAR* ppArgs[2];
 				size_t iCount;
 				iCount = Str_ParseCmds(const_cast<TCHAR*>(s.GetKey() + 4), ppArgs, COUNTOF(ppArgs), ",");
+				Str_TrimWhitespace(ppArgs[0]);
 				g_Exp.m_VarGlobals.SetStr(ppArgs[0], false, ppArgs[1], false);
 				return true;
 			}
@@ -1619,6 +1620,8 @@ bool CScriptObj::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 			// fall through
 		case SSC_VAR:
 		{
+			GETNONWHITESPACE(pszKey);
+			Str_TrimEndWhitespace((TCHAR*)pszKey, strlen(pszKey));
 			CVarDefCont *pVar = g_Exp.m_VarGlobals.GetKey(pszKey);
 			if ( pVar )
 				sVal = pVar->GetValStr();
@@ -2472,6 +2475,8 @@ bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole
 	{
 		EXC_SET("localarg");
 		pszKey += 4;
+		GETNONWHITESPACE(pszKey);
+		Str_TrimWhitespace((TCHAR*)pszKey);
 		sVal = m_VarsLocal.GetKeyStr(pszKey, true);
 		return true;
 	}
@@ -2572,6 +2577,7 @@ bool CScriptTriggerArgs::r_Verb(CScript &s, CTextConsole *pSrc)
 		TCHAR* ppArgs[2];
 		size_t iCount;
 		iCount = Str_ParseCmds(const_cast<TCHAR*>(s.GetKey() + 4), ppArgs, COUNTOF(ppArgs), ",");
+		Str_TrimWhitespace(ppArgs[0]);
 		m_VarsLocal.SetStr(ppArgs[0], fQuoted, ppArgs[1], false);
 		return true;
 	}
