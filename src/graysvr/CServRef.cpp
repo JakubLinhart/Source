@@ -312,6 +312,16 @@ bool CServerDef::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 		default:
 		{
 			LPCTSTR pszArgs = strchr(pszKey, ' ');
+			if (!pszArgs)
+			{
+				pszArgs = strchr(pszKey, '(');
+				if (pszArgs)
+				{
+					LPCTSTR pszArgsEnd = strchr(pszArgs, ')');
+					if (pszArgsEnd)
+						pszArgsEnd = '\0';
+				}
+			}
 			if ( pszArgs )
 				GETNONWHITESPACE(pszArgs);
 

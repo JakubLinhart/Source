@@ -1362,9 +1362,20 @@ bool CScriptObj::r_LoadVal(CScript &s)
 	{
 		case SSC_VAR:
 		{
-			bool fQuoted = false;
-			g_Exp.m_VarGlobals.SetStr(pszKey + 4, fQuoted, s.GetArgStr(&fQuoted), false);
-			return true;
+			if (*(pszKey + 3) == '.')
+			{
+				bool fQuoted = false;
+				g_Exp.m_VarGlobals.SetStr(pszKey + 4, fQuoted, s.GetArgStr(&fQuoted), false);
+				return true;
+			}
+			else
+			{
+				TCHAR* ppArgs[2];
+				size_t iCount;
+				iCount = Str_ParseCmds(const_cast<TCHAR*>(s.GetKey() + 4), ppArgs, COUNTOF(ppArgs), ",");
+				g_Exp.m_VarGlobals.SetStr(ppArgs[0], false, ppArgs[1], false);
+				return true;
+			}
 		}
 		case SSC_VAR0:
 		{
@@ -2255,6 +2266,16 @@ void CScriptTriggerArgs::Init(LPCTSTR pszStr)
 	if ( !pszStr )
 		pszStr = "";
 
+	bool fParentheses = false;
+	if (*pszStr == '(')
+	{
+		fParentheses = true;
+		++pszStr;
+		TCHAR* str = const_cast<TCHAR*>(strrchr(pszStr, ')'));
+		if (str)
+			*str = '\0';
+	}
+
 	// Raw is left untouched for now - it'll be split the 1st time argv is accessed
 	m_s1_raw = pszStr;
 	bool fQuote = false;
@@ -2422,8 +2443,8 @@ size_t CScriptTriggerArgs::getArgumentsCount()
 		}
 		m_v.Add(pszArgs);
 	}
-	iQty = m_v.GetCount();
 
+	return m_v.GetCount();
 }
 
 bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
@@ -2447,7 +2468,13 @@ bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole
 		sVal = m_VarsLocal.GetKeyStr(pszKey, true);
 		return true;
 	}
-
+	else if (!strnicmp("arg(", pszKey, 4))
+	{
+		EXC_SET("localarg");
+		pszKey += 4;
+		sVal = m_VarsLocal.GetKeyStr(pszKey, true);
+		return true;
+	}
 	if ( !strnicmp("FLOAT.", pszKey, 6) )
 	{
 		EXC_SET("float");
@@ -2537,6 +2564,15 @@ bool CScriptTriggerArgs::r_Verb(CScript &s, CTextConsole *pSrc)
 	{
 		bool fQuoted = false;
 		m_VarsLocal.SetStr(s.GetKey() + 6, fQuoted, s.GetArgStr(&fQuoted), false);
+		return true;
+	}
+	else if (!strnicmp("arg", pszKey, 4))
+	{
+		bool fQuoted = false;
+		TCHAR* ppArgs[2];
+		size_t iCount;
+		iCount = Str_ParseCmds(const_cast<TCHAR*>(s.GetKey() + 4), ppArgs, COUNTOF(ppArgs), ",");
+		m_VarsLocal.SetStr(ppArgs[0], fQuoted, ppArgs[1], false);
 		return true;
 	}
 	else if ( !strnicmp("REF", pszKey, 3) )

@@ -7,7 +7,7 @@
 #define _ISCSYMF(ch)					(IsAlpha(ch) || (ch == '_'))		// __iscsym or __iscsymf
 #define _ISCSYM(ch)						(isalnum(ch) || (ch == '_'))		// __iscsym or __iscsymf
 
-#define SKIP_SEPARATORS(pszStr)			while (*(pszStr) == '.') { ++(pszStr); }	// || ISWHITESPACE(*(pszStr))
+#define SKIP_SEPARATORS(pszStr)			while (*(pszStr) == '.' || *(pszStr) == '(') { ++(pszStr); }	// || ISWHITESPACE(*(pszStr))
 #define SKIP_ARGSEP(pszStr)				while ((*(pszStr) == ',') || IsSpace(*pszStr)) { ++(pszStr); }
 #define SKIP_IDENTIFIERSTRING(pszStr)	while (_ISCSYM(*pszStr)) { ++(pszStr); }
 

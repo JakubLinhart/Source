@@ -787,6 +787,8 @@ public:
 		if ( fNoSpaces )
 		{
 			const char *p = strchr(pszID, ' ');
+			if ( !p )
+				p = strchr(pszID, '(');
 			if ( p )
 			{
 				size_t iLen = p - pszID;

@@ -1135,6 +1135,7 @@ enum SV_TYPE
 	SV_SECURE,
 	SV_SHRINKMEM,
 	SV_SHUTDOWN,
+	SV_SMSG,
 	SV_TIME,		// read only
 	SV_UNBLOCKIP,
 	SV_VARLIST,
@@ -1172,6 +1173,7 @@ LPCTSTR const CServer::sm_szVerbKeys[SV_QTY + 1] =
 	"SECURE",
 	"SHRINKMEM",
 	"SHUTDOWN",
+	"SMSG",
 	"TIME",			// read only
 	"UNBLOCKIP",
 	"VARLIST",
@@ -1372,7 +1374,7 @@ bool CServer::r_Verb(CScript &s, CTextConsole *pSrc)
 			goto logMessage;
 		case SV_LOG:
 		{
-logMessage:
+		logMessage:
 			LPCTSTR pszArgs = s.GetArgStr();
 			if (pszArgs && (*pszArgs == '@'))
 			{
@@ -1381,6 +1383,18 @@ logMessage:
 					dwMask |= LOGM_NOCONTEXT;
 			}
 			g_Log.Event(dwMask, "%s\n", pszArgs);
+			break;
+		}
+		case SV_SMSG:
+		{
+			LPCTSTR pszArgs = s.GetArgStr();
+			if (pszArgs && (*pszArgs == '@'))
+			{
+				++pszArgs;
+				if (*pszArgs != '@')
+					dwMask |= LOGM_NOCONTEXT;
+			}
+			g_Log.Event(dwMask, "%s", pszArgs);
 			break;
 		}
 		case SV_RESPAWN:

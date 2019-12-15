@@ -91,6 +91,8 @@ if defined GitRev (
       <PreprocessorDefinitions>_PRIVATEBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level2</WarningLevel>
       <ExceptionHandling>Async</ExceptionHandling>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_PRIVATEBUILD;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
