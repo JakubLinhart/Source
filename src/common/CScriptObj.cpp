@@ -1365,7 +1365,19 @@ bool CScriptObj::r_LoadVal(CScript &s)
 			if (*(pszKey + 3) == '.')
 			{
 				bool fQuoted = false;
-				g_Exp.m_VarGlobals.SetStr(pszKey + 4, fQuoted, s.GetArgStr(&fQuoted), false);
+				TCHAR* args = s.GetArgStr(&fQuoted);
+				if (*args == '#')
+				{
+					TemporaryString pszBuffer;
+					strcpy(pszBuffer, pszKey + 4);
+					strcat(pszBuffer, args + 1);
+					int iValue = Exp_GetVal(pszBuffer);
+					g_Exp.m_VarGlobals.SetNum(pszKey + 4, iValue, false);
+				}
+				else
+				{
+					g_Exp.m_VarGlobals.SetStr(pszKey + 4, fQuoted, s.GetArgStr(&fQuoted), false);
+				}
 				return true;
 			}
 			else
@@ -1517,6 +1529,13 @@ bool CScriptObj::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 	int index = FindTableHeadSorted(pszKey, sm_szLoadKeys, COUNTOF(sm_szLoadKeys) - 1);
 	if ( index < 0 )
 	{
+		CVarDefCont* pVar = g_Exp.m_VarGlobals.GetKey(pszKey);
+		if (pVar)
+		{
+			sVal = pVar->GetValStr();
+			return true;
+		}
+
 		if ( (*pszKey == 'd') || (*pszKey == 'D') )
 		{
 			// <dSOMEVAL> same as <eval <SOMEVAL>> to get dec from the val
@@ -2484,7 +2503,7 @@ bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole
 		sVal = m_VarsLocal.GetKeyStr(pszKey, true);
 		return true;
 	}
-	else if (!strnicmp("arg(", pszKey, 4))
+	else if (!strnicmp("arg(", pszKey, 4) || !strnicmp("arg.", pszKey, 4))
 	{
 		EXC_SET("localarg");
 		pszKey += 4;
@@ -2557,7 +2576,22 @@ bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole
 			sVal = m_s1;
 			break;
 		default:
+			CVarDefCont* pVar = m_VarsLocal.GetKey(pszKey);
+			if (pVar)
+			{
+				EXC_SET("nonspecificvar");
+				sVal = pVar->GetValStr();
+				return true;
+			}
+
 			return CScriptObj::r_WriteVal(pszKey, sVal, pSrc);
+	}
+	CVarDefCont* pVar = m_VarsLocal.GetKey(pszKey);
+	if (pVar)
+	{
+		EXC_SET("nonspecificvar");
+		sVal = pVar->GetValStr();
+		return true;
 	}
 	return true;
 	EXC_CATCH;
@@ -2583,26 +2617,28 @@ bool CScriptTriggerArgs::r_Verb(CScript &s, CTextConsole *pSrc)
 		m_VarsLocal.SetStr(s.GetKey() + 6, fQuoted, s.GetArgStr(&fQuoted), false);
 		return true;
 	}
-	else if (!strnicmp("arg", pszKey, 4))
+	else if (!strnicmp("arg", pszKey, 3) || !strnicmp("arg.", pszKey, 4))
 	{
 		bool fQuoted = false;
 		TCHAR* ppArgs[2];
 		size_t iCount;
 		iCount = Str_ParseCmds(const_cast<TCHAR*>(s.GetKey() + 4), ppArgs, COUNTOF(ppArgs), ",");
 		TCHAR *pszVarName = Str_TrimWhitespace(ppArgs[0]);
-		if (*ppArgs[1] == '#')
+		TCHAR* pszValue = iCount == 1 ? s.GetArgStr(&fQuoted) : ppArgs[1];
+
+		if (*pszValue == '#')
 		{
 			LPCTSTR sVal = m_VarsLocal.GetKeyStr(pszVarName);
 
 			TemporaryString pszBuffer;
 			strcpy(pszBuffer, sVal);
-			strcat(pszBuffer, ppArgs[1] + 1);
+			strcat(pszBuffer, pszValue + 1);
 			int iValue = Exp_GetVal(pszBuffer);
 			m_VarsLocal.SetNum(pszVarName, iValue, false);
 		}
 		else
 		{
-			m_VarsLocal.SetStr(ppArgs[0], fQuoted, ppArgs[1], false);
+			m_VarsLocal.SetStr(pszVarName, fQuoted, pszValue, false);
 		}
 
 		return true;
