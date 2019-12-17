@@ -1373,8 +1373,21 @@ bool CScriptObj::r_LoadVal(CScript &s)
 				TCHAR* ppArgs[2];
 				size_t iCount;
 				iCount = Str_ParseCmds(const_cast<TCHAR*>(s.GetKey() + 4), ppArgs, COUNTOF(ppArgs), ",");
-				Str_TrimWhitespace(ppArgs[0]);
-				g_Exp.m_VarGlobals.SetStr(ppArgs[0], false, ppArgs[1], false);
+				TCHAR* pszVarName = Str_TrimWhitespace(ppArgs[0]);
+				if (*ppArgs[1] == '#')
+				{
+					LPCTSTR sVal = g_Exp.m_VarGlobals.GetKeyStr(pszVarName);
+
+					TemporaryString pszBuffer;
+					strcpy(pszBuffer, sVal);
+					strcat(pszBuffer, ppArgs[1] + 1);
+					int iValue = Exp_GetVal(pszBuffer);
+					g_Exp.m_VarGlobals.SetNum(pszVarName, iValue, false);
+				}
+				else
+				{
+					g_Exp.m_VarGlobals.SetStr(pszVarName, false, ppArgs[1], false);
+				}
 				return true;
 			}
 		}
@@ -2475,9 +2488,8 @@ bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole
 	{
 		EXC_SET("localarg");
 		pszKey += 4;
-		GETNONWHITESPACE(pszKey);
-		Str_TrimWhitespace((TCHAR*)pszKey);
-		sVal = m_VarsLocal.GetKeyStr(pszKey, true);
+		TCHAR *pszVarName = Str_TrimWhitespace((TCHAR*)pszKey);
+		sVal = m_VarsLocal.GetKeyStr(pszVarName, true);
 		return true;
 	}
 	if ( !strnicmp("FLOAT.", pszKey, 6) )
@@ -2577,8 +2589,22 @@ bool CScriptTriggerArgs::r_Verb(CScript &s, CTextConsole *pSrc)
 		TCHAR* ppArgs[2];
 		size_t iCount;
 		iCount = Str_ParseCmds(const_cast<TCHAR*>(s.GetKey() + 4), ppArgs, COUNTOF(ppArgs), ",");
-		Str_TrimWhitespace(ppArgs[0]);
-		m_VarsLocal.SetStr(ppArgs[0], fQuoted, ppArgs[1], false);
+		TCHAR *pszVarName = Str_TrimWhitespace(ppArgs[0]);
+		if (*ppArgs[1] == '#')
+		{
+			LPCTSTR sVal = m_VarsLocal.GetKeyStr(pszVarName);
+
+			TemporaryString pszBuffer;
+			strcpy(pszBuffer, sVal);
+			strcat(pszBuffer, ppArgs[1] + 1);
+			int iValue = Exp_GetVal(pszBuffer);
+			m_VarsLocal.SetNum(pszVarName, iValue, false);
+		}
+		else
+		{
+			m_VarsLocal.SetStr(ppArgs[0], fQuoted, ppArgs[1], false);
+		}
+
 		return true;
 	}
 	else if ( !strnicmp("REF", pszKey, 3) )
