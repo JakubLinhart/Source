@@ -1653,7 +1653,7 @@ bool CScriptObj::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 		case SSC_VAR:
 		{
 			GETNONWHITESPACE(pszKey);
-			Str_TrimEndWhitespace((TCHAR*)pszKey, strlen(pszKey));
+			pszKey = Str_TrimEnd((TCHAR*)pszKey, ") \t");
 			CVarDefCont *pVar = g_Exp.m_VarGlobals.GetKey(pszKey);
 			if ( pVar )
 				sVal = pVar->GetValStr();
@@ -2358,6 +2358,7 @@ enum AGC_TYPE
 	AGC_S,
 	AGC_V,
 	AGC_LVAR,
+	AGC_SAFE,
 	AGC_TRY,
 	AGC_TRYSRV,
 	AGC_QTY
@@ -2373,6 +2374,7 @@ LPCTSTR const CScriptTriggerArgs::sm_szLoadKeys[AGC_QTY + 1] =
 	"ARGS",
 	"ARGV",
 	"LOCAL",
+	"SAFE",
 	"TRY",
 	"TRYSRV",
 	NULL
@@ -2508,6 +2510,7 @@ bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole
 		EXC_SET("localarg");
 		pszKey += 4;
 		TCHAR *pszVarName = Str_TrimWhitespace((TCHAR*)pszKey);
+		pszKey = Str_TrimEnd(const_cast<TCHAR*>(pszKey), ")");
 		sVal = m_VarsLocal.GetKeyStr(pszVarName, true);
 		return true;
 	}
@@ -2549,6 +2552,15 @@ bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole
 		}
 
 		sVal = m_v.GetAt(static_cast<size_t>(iKey));
+		return true;
+	}
+	else if (!strnicmp(pszKey, "SAFE", 4)) {
+		pszKey += 4;
+		if (*pszKey == '(' || *pszKey == '.')
+			pszKey++;
+		GETNONWHITESPACE(pszKey);
+		if (!r_WriteVal(pszKey, sVal, pSrc))
+			sVal = "";
 		return true;
 	}
 
@@ -2684,6 +2696,16 @@ bool CScriptTriggerArgs::r_Verb(CScript &s, CTextConsole *pSrc)
 			m_pO1 = static_cast<CGrayUID>(Exp_GetSingle(pszKey)).ObjFind();
 			return true;
 		}
+	}
+	else if (!strnicmp(pszKey, "SAFE", 4))
+	{
+		pszKey += 4;
+		if (*pszKey == '.')
+			pszKey++;
+
+		CScript safe_script(pszKey, s.GetArgStr());
+		r_Verb(safe_script, pSrc);
+		return true;
 	}
 	else
 		index = FindTableSorted(s.GetKey(), sm_szLoadKeys, COUNTOF(sm_szLoadKeys) - 1);

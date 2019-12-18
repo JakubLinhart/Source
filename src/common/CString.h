@@ -463,6 +463,8 @@ TCHAR * Str_TrimWhitespace(TCHAR * pStr);
 * @return -1 for a bad offset or if string if not found, otherwise the position of the substring in string.
 */
 int Str_IndexOf(TCHAR * pStr1, TCHAR * pStr2, int offset = 0);
+
+TCHAR* Str_TrimEnd(TCHAR* pStr, LPCTSTR pszSep);
 /**
 * @brief Parse a simple argument from a list of arguments.
 * 
