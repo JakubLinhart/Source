@@ -342,6 +342,7 @@ bool CCharPlayer::r_LoadVal(CChar *pChar, CScript &s)
 		case CPC_REFUSETRADES:
 			m_fRefuseTrades = (s.GetArgVal() > 0);
 			return true;
+		case CPC_PROFESSION:
 		case CPC_SKILLCLASS:
 			return SetSkillClass(pChar, g_Cfg.ResourceGetIDType(RES_SKILLCLASS, s.GetArgStr()));
 		case CPC_SKILLLOCK:

@@ -2225,6 +2225,7 @@ bool CResource::LoadResourceSection(CScript *pScript)
 			return true;
 		}
 		case RES_DEFNAME:
+		case RES_DEFNAMES:
 		{
 			// Get defname block
 			while ( pScript->ReadKeyParse() )
@@ -2920,6 +2921,7 @@ RESOURCE_ID CResource::ResourceGetNewID(RES_TYPE restype, LPCTSTR pszName, CVarD
 		case RES_BLOCKIP:
 		case RES_COMMENT:
 		case RES_DEFNAME:
+		case RES_DEFNAMES:
 		case RES_KRDIALOGLIST:
 		case RES_MOONGATES:
 		case RES_NOTOTITLES:

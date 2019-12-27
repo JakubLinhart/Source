@@ -17,6 +17,7 @@ enum RES_TYPE	// all the script resource blocks we know how to deal with
 	RES_CHARDEF,		// Define a char type
 	RES_COMMENT,		// A commented out block type
 	RES_DEFNAME,		// (SL) Just add a bunch of new defs and equivs str/values
+	RES_DEFNAMES,		// (SL) Just add a bunch of new defs and equivs str/values
 	RES_DIALOG,			// A scriptable gump dialog, text or handler block
 	RES_EVENTS,			// (SL) Preload these event files
 	RES_FAME,

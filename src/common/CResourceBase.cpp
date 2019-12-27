@@ -15,6 +15,7 @@ LPCTSTR const CResourceBase::sm_szResourceBlocks[RES_QTY] =	// static
 	"CHARDEF",			// Define a char type
 	"COMMENT",			// A commented out block type
 	"DEFNAME",			// (SL) Just add a bunch of new defs and equivs str/values
+	"DEFNAMES",			// (SL) Just add a bunch of new defs and equivs str/values
 	"DIALOG",			// A scriptable gump dialog, text or handler block
 	"EVENTS",			// (SL) Preload these event files
 	"FAME",
