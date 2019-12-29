@@ -186,6 +186,7 @@ public:
 	bool r_LoadVal(CScript &s);
 	bool r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc);
 	bool r_Verb(CScript &s, CTextConsole *pSrc);
+	LPCTSTR GetArgV(int iKey);
 
 	void getArgNs(INT64 *piVar1 = NULL, INT64 *piVar2 = NULL, INT64 *piVar3 = NULL)		// puts ARGN's into the specified variables
 	{

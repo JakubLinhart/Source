@@ -312,20 +312,24 @@ bool CServerDef::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 		default:
 		{
 			LPCTSTR pszArgs = strpbrk(pszKey, " (");
-			if (!pszArgs)
+			TemporaryString pszBuffer;
+			if (pszArgs)
 			{
-				if (*pszKey == '(')
+				if (*pszArgs == '(')
 				{
 					LPCTSTR pszArgsEnd = strchr(pszArgs, ')');
 					if (pszArgsEnd)
-						pszArgsEnd = '\0';
+					{
+						strcpylen(pszBuffer, pszArgs + 1, pszArgsEnd - pszArgs);
+						pszArgs = pszBuffer;
+					}
 				}
 			}
-			if ( pszArgs )
+			if (pszArgs)
 				GETNONWHITESPACE(pszArgs);
 
 			CScriptTriggerArgs Args(pszArgs ? pszArgs : "");
-			if ( r_Call(pszKey, pSrc, &Args, &sVal) )
+			if (r_Call(pszKey, pSrc, &Args, &sVal))
 				return true;
 
 			return CScriptObj::r_WriteVal(pszKey, sVal, pSrc);

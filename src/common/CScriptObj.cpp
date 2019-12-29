@@ -1291,9 +1291,35 @@ bool CScriptObj::r_GetRef(LPCTSTR &pszKey, CScriptObj *&pRef)
 		pRef = &g_Serv;
 		return true;
 	}
+	if (!strnicmp(pszKey, "FINDRES(", 8)) {
+		pszKey += 8;
+		TCHAR* ppArgs[3];
+		ppArgs[0] = const_cast<TCHAR*>(pszKey);
+		Str_Parse(ppArgs[0], &(ppArgs[1]), ",");
+		Str_Parse(ppArgs[1], &(ppArgs[2]), ")");
+
+		pszKey = ppArgs[2];
+		if (*pszKey != '.')
+			return false;
+		pszKey++;
+		if (g_Cfg.r_GetRef(ppArgs[0], ppArgs[1], pRef))
+		{
+			return true;
+		}
+		if (g_World.r_GetRef(pszKey, pRef))
+			return true;
+		return true;
+	}
 	else if ( !strnicmp(pszKey, "UID.", 4) )
 	{
 		pszKey += 4;
+		pRef = static_cast<CGrayUID>(Exp_GetLLVal(pszKey)).ObjFind();
+		SKIP_SEPARATORS(pszKey);
+		return true;
+	}
+	else if (!strnicmp(pszKey, "FINDUID(", 8))
+	{
+		pszKey += 8;
 		pRef = static_cast<CGrayUID>(Exp_GetLLVal(pszKey)).ObjFind();
 		SKIP_SEPARATORS(pszKey);
 		return true;
@@ -2306,9 +2332,9 @@ void CScriptTriggerArgs::Init(LPCTSTR pszStr)
 	{
 		fParentheses = true;
 		++pszStr;
-		TCHAR* str = const_cast<TCHAR*>(strrchr(pszStr, ')'));
-		if (str)
-			*str = '\0';
+		//TCHAR* str = const_cast<TCHAR*>(strrchr(pszStr, ')'));
+		//if (str)
+		//	*str = '\0';
 	}
 
 	// Raw is left untouched for now - it'll be split the 1st time argv is accessed
@@ -2484,6 +2510,12 @@ size_t CScriptTriggerArgs::getArgumentsCount()
 	return m_v.GetCount();
 }
 
+LPCTSTR CScriptTriggerArgs::GetArgV(int iKey)
+{
+	size_t iQty = getArgumentsCount();
+	return m_v.GetAt(static_cast<size_t>(iKey));
+}
+
 bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 {
 	ADDTOCALLSTACK("CScriptTriggerArgs::r_WriteVal");
@@ -2510,7 +2542,7 @@ bool CScriptTriggerArgs::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole
 		EXC_SET("localarg");
 		pszKey += 4;
 		TCHAR *pszVarName = Str_TrimWhitespace((TCHAR*)pszKey);
-		pszKey = Str_TrimEnd(const_cast<TCHAR*>(pszKey), ")");
+		pszKey = Str_TrimEnd(const_cast<TCHAR*>(pszKey), " )");
 		sVal = m_VarsLocal.GetKeyStr(pszVarName, true);
 		return true;
 	}

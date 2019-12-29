@@ -270,6 +270,24 @@ CResource::~CResource()
 	Unload(false);
 }
 
+bool CResource::r_GetRef(LPCTSTR pszResType, LPCTSTR pszKey, CScriptObj*& pRef)
+{
+	ADDTOCALLSTACK("CResource::r_GetRef");
+	int iResType = FindTableSorted(pszResType, sm_szResourceBlocks, RES_QTY);
+	if (iResType == RES_CHARDEF)
+	{
+		pRef = CCharBase::FindCharBase(static_cast<CREID_TYPE>(g_Cfg.ResourceGetIndexType(RES_CHARDEF, pszKey)));
+		return true;
+	}
+	else if (iResType == RES_ITEMDEF)
+	{
+		pRef = CItemBase::FindItemBase(static_cast<ITEMID_TYPE>(g_Cfg.ResourceGetIndexType(RES_ITEMDEF, pszKey)));
+		return true;
+	}
+
+	return false;
+}
+
 // SKILL ITEMDEF, etc
 bool CResource::r_GetRef(LPCTSTR &pszKey, CScriptObj *&pRef)
 {
