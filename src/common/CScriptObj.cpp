@@ -1280,6 +1280,31 @@ static void StringFunction(int iFunc, LPCTSTR pszKey, CGString &sVal)
 	}
 }
 
+bool CScriptObj::r_GetRefNew(LPCTSTR& pszKey, CScriptObj*& pRef, LPCTSTR pszRawArgs)
+{
+	ADDTOCALLSTACK("CScriptObj::r_GetRefNew");
+	
+	if (!strnicmp(pszKey, "FINDUID", 7))
+	{
+		pszKey += 7;
+		if (*pszKey)
+		{
+			if (*pszKey == '(')
+				pszKey++;
+		}
+		else
+		{
+			pszKey = pszRawArgs;
+		}
+
+		pRef = static_cast<CGrayUID>(Exp_GetLLVal(pszKey)).ObjFind();
+		SKIP_SEPARATORS(pszKey);
+		return true;
+	}
+
+	return false;
+}
+
 bool CScriptObj::r_GetRef(LPCTSTR &pszKey, CScriptObj *&pRef)
 {
 	ADDTOCALLSTACK("CScriptObj::r_GetRef");
@@ -1317,22 +1342,15 @@ bool CScriptObj::r_GetRef(LPCTSTR &pszKey, CScriptObj *&pRef)
 		SKIP_SEPARATORS(pszKey);
 		return true;
 	}
-	else if (!strnicmp(pszKey, "FINDUID(", 8))
-	{
-		pszKey += 8;
-		pRef = static_cast<CGrayUID>(Exp_GetLLVal(pszKey)).ObjFind();
-		SKIP_SEPARATORS(pszKey);
-		return true;
-	}
 	else if ( !strnicmp(pszKey, "OBJ.", 4) )
 	{
 		pszKey += 4;
 		pRef = g_World.m_uidObj.ObjFind();
 		return true;
 	}
-	else if ( !strnicmp(pszKey, "NEW.", 4) )
+	else if ( !strnicmp(pszKey, "LASTNEW.", 8) )
 	{
-		pszKey += 4;
+		pszKey += 8;
 		pRef = g_World.m_uidNew.ObjFind();
 		return true;
 	}
@@ -1535,6 +1553,9 @@ bool CScriptObj::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 			sVal.FormatHex(0x1);
 		return true;
 	}
+
+	if ( !fGetRef )
+		fGetRef = r_GetRefNew(pszKey, pRef);
 
 	if ( fGetRef )
 	{
@@ -2068,6 +2089,16 @@ bool CScriptObj::r_Verb(CScript &s, CTextConsole *pSrc)
 			return pRef->r_Verb(script, pSrc);
 		}
 		// else just fall through. as they seem to be setting the pointer !?
+	}
+	if (r_GetRefNew(pszKey, pRef, s.GetArgRaw()))
+	{
+		if (pszKey[0])
+		{
+			if (!pRef)
+				return true;
+			CScript script(pszKey);
+			return pRef->r_Verb(script, pSrc);
+		}
 	}
 
 	if ( s.IsKeyHead("SRC.", 4) )

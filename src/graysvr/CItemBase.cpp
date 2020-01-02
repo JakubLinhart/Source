@@ -996,7 +996,7 @@ bool CItemBase::r_WriteVal(LPCTSTR pszKey, CGString &sVal, CTextConsole *pSrc)
 			sVal.FormatHex((m_Can & CAN_I_FLIP) ? true : false);
 			break;
 		case IBC_ID:
-			sVal.FormatHex(GetDispID());
+			sVal = g_Cfg.ResourceGetName(RESOURCE_ID(RES_ITEMDEF, GetDispID()));
 			break;
 		case IBC_IMBUE:
 			sVal.FormatVal((m_Can & CAN_I_IMBUE) ? true : false);

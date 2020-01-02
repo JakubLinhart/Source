@@ -1608,20 +1608,12 @@ bool CWorld::r_GetRef(LPCTSTR &pszKey, CScriptObj *&pRef)
 	if ( !strnicmp(pszKey, "LASTNEW", 7) )
 	{
 		pszKey += 7;
-		if ( !strnicmp(pszKey, "ITEM", 4) )
-		{
-			pszKey += 4;
-			SKIP_SEPARATORS(pszKey);
-			pRef = m_uidLastNewItem.ItemFind();
-			return true;
-		}
-		if ( !strnicmp(pszKey, "CHAR", 4) )
-		{
-			pszKey += 4;
-			SKIP_SEPARATORS(pszKey);
+		SKIP_SEPARATORS(pszKey);
+		pRef = m_uidLastNewItem.ItemFind();
+		if (!pRef)
 			pRef = m_uidLastNewChar.CharFind();
-			return true;
-		}
+
+		return true;
 	}
 	return false;
 }
